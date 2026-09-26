@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna Home | مفروشات وملايات مودرن وكيوت</title>
+    
+    <!-- Google Fonts: Cairo & Tajawal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        lunaPrimary: '#6B4F45',
+                        lunaSecondary: '#E8D8C8',
+                        lunaBg: '#FAF7F2',
+                        lunaAccent: '#C98F78',
+                        lunaText: '#2D2926',
+                        lunaWhite: '#FFFFFF'
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        tajawal: ['Tajawal', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 30px -10px rgba(107, 79, 69, 0.08)',
+                        'hover': '0 20px 35px -12px rgba(107, 79, 69, 0.16)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background-color: #FAF7F2;
+            color: #2D2926;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FAF7F2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E8D8C8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #C98F78;
+        }
+
+        /* Scroll Reveal Effect */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Smooth Slide Drawers */
+        .drawer-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .drawer-panel {
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-lunaSecondary selection:text-lunaPrimary">
+
+    <!-- Floating Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-lunaPrimary text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-lunaAccent/30">
+            <span id="toast-icon" class="text-lunaSecondary text-lg"><i class="fa-solid fa-circle-check"></i></span>
+            <span id="toast-msg" class="text-xs sm:text-sm font-medium">تمت العملية بنجاح</span>
+        </div>
+    </div>
+
+    <!-- Live Search Modal -->
+    <div id="search-modal" class="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-lunaText/40 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300">
+        <div id="search-box" class="bg-white w-11/12 max-w-2xl rounded-3xl p-6 shadow-2xl border border-lunaSecondary transform -translate-y-6 transition-all duration-300">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-lunaSecondary/40">
+                <h3 class="text-lg font-bold text-lunaPrimary flex items-center gap-2 font-cairo">
+                    <i class="fa-solid fa-magnifying-glass text-lunaAccent"></i> البحث في منتجات Luna Home
+                </h3>
+                <button onclick="toggleSearch()" class="w-8 h-8 rounded-full bg-lunaBg text-lunaPrimary hover:bg-lunaSecondary flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="relative">
+                <input type="text" id="search-input" onkeyup="filterProducts()" placeholder="ابحث عن: Cloud Beige, طقم زيتي, وردي..." class="w-full bg-lunaBg border border-lunaSecondary/60 rounded-2xl px-5 py-3.5 pr-12 text-lunaText focus:outline-none focus:border-lunaAccent text-xs sm:text-sm transition">
+                <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-lunaPrimary/50"></i>
+            </div>
+            <div id="search-results" class="mt-4 max-h-60 overflow-y-auto space-y-2">
+                <p class="text-xs text-lunaPrimary/60 text-center py-4">اكتب شيئاً لبدء البحث عن المفروشات والملايات...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Slide-Over Drawer -->
+    <div id="cart-drawer" class="fixed inset-0 z-50 pointer-events-none">
+        <div id="cart-backdrop" onclick="toggleCart()" class="drawer-overlay absolute inset-0 bg-lunaText/40 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="cart-panel" class="drawer-panel absolute top-0 left-0 bottom-0 w-full max-w-md bg-lunaBg shadow-2xl transform -translate-x-full flex flex-col justify-between pointer-events-auto">
+            <!-- Header -->
+            <div class="p-6 bg-white border-b border-lunaSecondary/40 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-lunaSecondary/40 flex items-center justify-center text-lunaPrimary">
+                        <i class="fa-solid fa-bag-shopping text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-lunaPrimary font-cairo">سلة المشتريات</h2>
+                        <p class="text-xs text-lunaPrimary/60 font-tajawal"><span id="cart-count-text">0</span> منتجات محددة</p>
+                    </div>
+                </div>
+                <button onclick="toggleCart()" class="w-9 h-9 rounded-full bg-lunaBg text-lunaPrimary hover:bg-lunaSecondary flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Dynamic Cart Items Container -->
+            <div id="cart-items-container" class="flex-1 overflow-y-auto p-6 space-y-4">
+                <!-- Empty State -->
+                <div id="empty-cart" class="text-center py-12 flex flex-col items-center justify-center">
+                    <div class="w-20 h-20 rounded-full bg-lunaSecondary/30 text-lunaAccent flex items-center justify-center text-3xl mb-4">
+                        <i class="fa-solid fa-basket-shopping"></i>
+                    </div>
+                    <h4 class="text-base font-bold text-lunaPrimary font-cairo">السلة فارغة حالياً</h4>
+                    <p class="text-xs text-lunaPrimary/60 mt-1 max-w-xs font-tajawal">اختر ما يحلو لك من المجموعات لجعل غرفة نومك أكثر جمالاً</p>
+                    <button onclick="toggleCart(); document.getElementById('products').scrollIntoView();" class="mt-5 px-6 py-2.5 bg-lunaPrimary text-white rounded-full text-xs font-semibold hover:bg-lunaAccent transition">تصفح المنتجات</button>
+                </div>
+            </div>
+
+            <!-- Footer Summary -->
+            <div id="cart-footer" class="p-6 bg-white border-t border-lunaSecondary/40 space-y-4 hidden">
+                <div class="space-y-2 text-sm font-tajawal">
+                    <div class="flex justify-between text-lunaPrimary/70">
+                        <span>المجموع الفرعي</span>
+                        <span id="subtotal-price" class="font-bold">0 جنيه</span>
+                    </div>
+                    <div class="flex justify-between text-lunaPrimary/70">
+                        <span>مصاريف الشحن</span>
+                        <span class="text-emerald-700 font-bold">مجاني</span>
+                    </div>
+                    <div class="border-t border-lunaSecondary/30 pt-2 flex justify-between text-base font-bold text-lunaPrimary font-cairo">
+                        <span>الإجمالي</span>
+                        <span id="total-price" class="text-lunaPrimary">0 جنيه</span>
+                    </div>
+                </div>
+                <button onclick="checkout()" class="w-full py-3.5 bg-lunaPrimary text-white font-bold rounded-2xl hover:bg-lunaAccent transition shadow-md flex items-center justify-center gap-2 text-xs sm:text-sm">
+                    <i class="fa-solid fa-lock text-sm"></i> متابعة الدفع وإتمام الطلب
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-lunaBg/90 backdrop-blur-md border-b border-lunaSecondary/40 transition-all duration-300" id="main-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Brand Logo -->
+                <a href="#" class="flex items-center gap-2.5 group">
+                    <div class="w-10 h-10 rounded-full bg-lunaPrimary text-lunaSecondary flex items-center justify-center text-xl shadow-soft group-hover:scale-105 transition transform">
+                        <i class="fa-solid fa-moon"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-2xl font-extrabold tracking-wide text-lunaPrimary font-cairo">Luna Home</span>
+                        <span class="text-[9px] tracking-widest uppercase text-lunaAccent font-semibold -mt-1">Bedding Collection</span>
+                    </div>
+                </a>
+
+                <!-- Navigation Links (Desktop) -->
+                <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-lunaText font-tajawal">
+                    <a href="#hero" class="hover:text-lunaAccent transition relative py-1 after:content-[''] after:absolute after:bottom-0 after:right-0 after:w-0 after:h-0.5 after:bg-lunaAccent hover:after:w-full after:transition-all">الرئيسية</a>
+                    <a href="#collections" class="hover:text-lunaAccent transition relative py-1 after:content-[''] after:absolute after:bottom-0 after:right-0 after:w-0 after:h-0.5 after:bg-lunaAccent hover:after:w-full after:transition-all">المجموعات</a>
+                    <a href="#products" class="hover:text-lunaAccent transition relative py-1 after:content-[''] after:absolute after:bottom-0 after:right-0 after:w-0 after:h-0.5 after:bg-lunaAccent hover:after:w-full after:transition-all">المنتجات</a>
+                    <a href="#why-us" class="hover:text-lunaAccent transition relative py-1 after:content-[''] after:absolute after:bottom-0 after:right-0 after:w-0 after:h-0.5 after:bg-lunaAccent hover:after:w-full after:transition-all">لماذا نحن</a>
+                    <a href="#testimonials" class="hover:text-lunaAccent transition relative py-1 after:content-[''] after:absolute after:bottom-0 after:right-0 after:w-0 after:h-0.5 after:bg-lunaAccent hover:after:w-full after:transition-all">آراء العملاء</a>
+                    <a href="#contact" class="hover:text-lunaAccent transition relative py-1 after:content-[''] after:absolute after:bottom-0 after:right-0 after:w-0 after:h-0.5 after:bg-lunaAccent hover:after:w-full after:transition-all">تواصل معنا</a>
+                </nav>
+
+                <!-- Actions / Cart & Search Buttons -->
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <!-- Search Trigger -->
+                    <button onclick="toggleSearch()" title="بحث" class="w-10 h-10 rounded-full bg-white border border-lunaSecondary/60 text-lunaPrimary hover:bg-lunaSecondary/40 flex items-center justify-center transition shadow-sm">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </button>
+
+                    <!-- Wishlist Badge Trigger -->
+                    <button onclick="showWishlistToast()" title="المفضلة" class="w-10 h-10 rounded-full bg-white border border-lunaSecondary/60 text-lunaPrimary hover:bg-lunaSecondary/40 flex items-center justify-center transition shadow-sm relative">
+                        <i class="fa-regular fa-heart text-sm"></i>
+                        <span id="wishlist-badge" class="absolute -top-1 -right-1 bg-lunaAccent text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold opacity-0 transition">0</span>
+                    </button>
+
+                    <!-- Cart Trigger Button -->
+                    <button onclick="toggleCart()" class="relative bg-lunaPrimary text-white hover:bg-lunaAccent px-4 py-2.5 rounded-full flex items-center gap-2.5 transition shadow-md group">
+                        <i class="fa-solid fa-bag-shopping text-sm group-hover:rotate-12 transition transform"></i>
+                        <span class="text-xs font-semibold hidden sm:inline font-tajawal">السلة</span>
+                        <span id="cart-badge" class="bg-lunaSecondary text-lunaPrimary text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                    </button>
+
+                    <!-- Mobile Menu Hamburger -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden w-10 h-10 rounded-full bg-white border border-lunaSecondary/60 text-lunaPrimary flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-bars" id="menu-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Responsive Mobile Navigation Drawer -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-lunaSecondary/40 px-6 py-6 space-y-4 font-cairo">
+            <a href="#hero" onclick="toggleMobileMenu()" class="block text-base font-semibold text-lunaPrimary hover:text-lunaAccent">الرئيسية</a>
+            <a href="#collections" onclick="toggleMobileMenu()" class="block text-base font-semibold text-lunaPrimary hover:text-lunaAccent">المجموعات</a>
+            <a href="#products" onclick="toggleMobileMenu()" class="block text-base font-semibold text-lunaPrimary hover:text-lunaAccent">المنتجات</a>
+            <a href="#why-us" onclick="toggleMobileMenu()" class="block text-base font-semibold text-lunaPrimary hover:text-lunaAccent">لماذا نحن</a>
+            <a href="#testimonials" onclick="toggleMobileMenu()" class="block text-base font-semibold text-lunaPrimary hover:text-lunaAccent">آراء العملاء</a>
+            <a href="#contact" onclick="toggleMobileMenu()" class="block text-base font-semibold text-lunaPrimary hover:text-lunaAccent">تواصل معنا</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative pt-6 pb-16 md:pt-12 md:pb-24 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                
+                <!-- Left Text Content -->
+                <div class="lg:col-span-6 space-y-6 text-center lg:text-right reveal active">
+                    <div class="inline-flex items-center gap-2 bg-lunaSecondary/50 text-lunaPrimary px-4 py-1.5 rounded-full text-xs font-bold font-tajawal">
+                        <i class="fa-solid fa-sparkles text-lunaAccent"></i> Make Your Bed. Make It Beautiful.
+                    </div>
+                    
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-lunaPrimary leading-tight font-cairo">
+                        اجعلي سريرك مساحتك المفضلة للراحة والأناقة.
+                    </h1>
+                    
+                    <p class="text-base sm:text-lg text-lunaText/80 leading-relaxed max-w-xl mx-auto lg:mx-0 font-tajawal">
+                        مفروشات وملايات عصرية مصممة لتجعل مساحتك الخاصة أكثر دفئاً وراحةً وأناقة مع خامات قطنية ناعمة للغاية.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+                        <a href="#collections" class="w-full sm:w-auto px-8 py-3.5 bg-lunaPrimary text-white font-semibold rounded-2xl hover:bg-lunaAccent shadow-soft transition-all duration-300 text-center flex items-center justify-center gap-2 text-xs sm:text-sm">
+                            <span>تصفح المجموعات</span>
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                        </a>
+                        <a href="#products" class="w-full sm:w-auto px-8 py-3.5 bg-white border border-lunaSecondary text-lunaPrimary font-semibold rounded-2xl hover:bg-lunaSecondary/40 transition-all duration-300 text-center text-xs sm:text-sm">
+                            اكتشف المنتجات
+                        </a>
+                    </div>
+
+                    <!-- Trust Stats -->
+                    <div class="pt-6 border-t border-lunaSecondary/40 grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <p class="text-xl font-bold text-lunaPrimary font-cairo">100%</p>
+                            <p class="text-xs text-lunaText/70 font-tajawal">قطن ناعم فاخر</p>
+                        </div>
+                        <div>
+                            <p class="text-xl font-bold text-lunaPrimary font-cairo">+10,000</p>
+                            <p class="text-xs text-lunaText/70 font-tajawal">عميل يتسوق منا</p>
+                        </div>
+                        <div>
+                            <p class="text-xl font-bold text-lunaPrimary font-cairo">4.9 ★</p>
+                            <p class="text-xs text-lunaText/70 font-tajawal">تقييم الجودة</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Visual Image Frame -->
+                <div class="lg:col-span-6 reveal active">
+                    <div class="relative mx-auto max-w-md lg:max-w-none">
+                        <div class="absolute -inset-2 bg-gradient-to-tr from-lunaSecondary to-lunaAccent/30 rounded-3xl transform rotate-2 blur-sm"></div>
+                        <div class="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/3] sm:aspect-[14/10]">
+                            <img src="https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&q=80&w=1000" 
+                                 alt="Luna Home Bedding Showcase" 
+                                 class="w-full h-full object-cover object-center transform hover:scale-105 transition duration-700">
+                            
+                            <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md p-3.5 rounded-2xl shadow-lg border border-lunaSecondary/50 flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-lunaSecondary/50 flex items-center justify-center text-lunaPrimary">
+                                    <i class="fa-solid fa-bed text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-lunaPrimary font-cairo">Cloud Beige Set</p>
+                                    <p class="text-[11px] text-lunaAccent font-semibold font-tajawal">الأكثر طلباً هذا الأسبوع</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Collections Section -->
+    <section id="collections" class="py-16 bg-white border-y border-lunaSecondary/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <span class="text-xs font-bold tracking-widest text-lunaAccent uppercase font-tajawal">تشكيلاتنا الجديدة</span>
+                <h2 class="text-3xl font-extrabold text-lunaPrimary font-cairo mt-1">مجموعاتنا</h2>
+                <p class="text-sm text-lunaText/70 mt-2 font-tajawal">تصاميم تناسب أذواق غرفة نومك وتفاصيلك المفضلة</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Collection Card 1 -->
+                <div class="group bg-lunaBg rounded-3xl overflow-hidden border border-lunaSecondary/50 shadow-soft hover:shadow-hover transition duration-300 flex flex-col justify-between reveal">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=800" 
+                             alt="Soft Neutrals Collection" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-lunaPrimary/60 via-transparent to-transparent opacity-60"></div>
+                        <span class="absolute top-4 right-4 bg-white/90 text-lunaPrimary px-3 py-1 rounded-full text-xs font-bold">هادئة ومحايدة</span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-1 justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-lunaPrimary font-cairo">Soft Neutrals</h3>
+                            <p class="text-xs text-lunaText/80 mt-2 leading-relaxed font-tajawal">ألوان هادئة ومحايدة للغرف البسيطة التي تتسم بالديكور الرائع والراحة النفسية.</p>
+                        </div>
+                        <a href="#products" class="mt-6 inline-flex items-center gap-2 text-xs font-bold text-lunaAccent group-hover:text-lunaPrimary transition font-tajawal">
+                            <span>اكتشف المجموعة</span>
+                            <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Collection Card 2 -->
+                <div class="group bg-lunaBg rounded-3xl overflow-hidden border border-lunaSecondary/50 shadow-soft hover:shadow-hover transition duration-300 flex flex-col justify-between reveal">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=800" 
+                             alt="Cute & Cozy Collection" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-lunaPrimary/60 via-transparent to-transparent opacity-60"></div>
+                        <span class="absolute top-4 right-4 bg-white/90 text-lunaPrimary px-3 py-1 rounded-full text-xs font-bold">تفاصيل كيوت</span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-1 justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-lunaPrimary font-cairo">Cute & Cozy</h3>
+                            <p class="text-xs text-lunaText/80 mt-2 leading-relaxed font-tajawal">تصميمات لطيفة ومريحة لمحبي التفاصيل الكيوت والألوان الناعمة والجذابة.</p>
+                        </div>
+                        <a href="#products" class="mt-6 inline-flex items-center gap-2 text-xs font-bold text-lunaAccent group-hover:text-lunaPrimary transition font-tajawal">
+                            <span>اكتشف المجموعة</span>
+                            <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Collection Card 3 -->
+                <div class="group bg-lunaBg rounded-3xl overflow-hidden border border-lunaSecondary/50 shadow-soft hover:shadow-hover transition duration-300 flex flex-col justify-between reveal">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800" 
+                             alt="Modern Prints Collection" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-lunaPrimary/60 via-transparent to-transparent opacity-60"></div>
+                        <span class="absolute top-4 right-4 bg-white/90 text-lunaPrimary px-3 py-1 rounded-full text-xs font-bold">نقوش عصرية</span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-1 justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-lunaPrimary font-cairo">Modern Prints</h3>
+                            <p class="text-xs text-lunaText/80 mt-2 leading-relaxed font-tajawal">نقوش عصرية لمن يريد إضافة لمسة شخصية متميزة وحيوية لغرفة النوم.</p>
+                        </div>
+                        <a href="#products" class="mt-6 inline-flex items-center gap-2 text-xs font-bold text-lunaAccent group-hover:text-lunaPrimary transition font-tajawal">
+                            <span>اكتشف المجموعة</span>
+                            <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <span class="text-xs font-bold tracking-widest text-lunaAccent uppercase font-tajawal">الملايات الأجمل</span>
+                <h2 class="text-3xl font-extrabold text-lunaPrimary font-cairo mt-1">مصممة للحظات المريحة</h2>
+                <p class="text-sm text-lunaText/70 mt-2 font-tajawal">اختر ما يناسب سريرك واستمتع بتجربة ملمس لا تُنسى</p>
+            </div>
+
+            <!-- Products Grid (6 Items) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="products-grid">
+                
+                <!-- Product 1 -->
+                <div class="bg-white rounded-3xl overflow-hidden border border-lunaSecondary/40 shadow-soft hover:shadow-hover transition duration-300 flex flex-col justify-between group reveal" data-name="cloud beige set">
+                    <div class="relative overflow-hidden aspect-[4/3] bg-lunaBg">
+                        <img src="https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&q=80&w=600" 
+                             alt="Cloud Beige Set" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <button onclick="toggleWishlist(this)" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md text-lunaPrimary hover:text-red-500 flex items-center justify-center transition shadow-sm">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-lunaPrimary font-cairo">Cloud Beige Set</h3>
+                                <p class="text-xs text-lunaText/60 mt-1 font-tajawal">طقم ملاية بيج مريح للغاية</p>
+                            </div>
+                            <span class="text-base font-extrabold text-lunaPrimary font-cairo">899 <span class="text-xs font-normal">جنيه</span></span>
+                        </div>
+                        <button onclick="addToCart(1, 'Cloud Beige Set', 899, 'https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&q=80&w=300')" class="w-full mt-5 py-3 bg-lunaBg hover:bg-lunaPrimary hover:text-white text-lunaPrimary font-semibold text-xs rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 border border-lunaSecondary/60 font-tajawal">
+                            <i class="fa-solid fa-cart-plus"></i> إضافة إلى السلة
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="bg-white rounded-3xl overflow-hidden border border-lunaSecondary/40 shadow-soft hover:shadow-hover transition duration-300 flex flex-col justify-between group reveal" data-name="blush bloom set">
+                    <div class="relative overflow-hidden aspect-[4/3] bg-lunaBg">
+                        <img src="https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=600" 
+                             alt="Blush Bloom Set" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <button onclick="toggleWishlist(this)" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md text-lunaPrimary hover:text-red-500 flex items-center justify-center transition shadow-sm">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-lunaPrimary font-cairo">Blush Bloom Set</h3>
+                                <p class="text-xs text-lunaText/60 mt-1 font-tajawal">طقم بلمسات وردية كيوت</p>
+                            </div>
+                            <span class="text-base font-extrabold text-lunaPrimary font-cairo">949 <span class="text-xs font-normal">جنيه</span></span>
+                        </div>
+                        <button onclick="addToCart(2, 'Blush Bloom Set', 949, 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=300')" class="w-full mt-5 py-3 bg-lunaBg hover:bg-lunaPrimary hover:text-white text-lunaPrimary font-semibold text-xs rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 border border-lunaSecondary/60 font-tajawal">
+                            <i class="fa-solid fa-cart-plus"></i> إضافة إلى السلة
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="bg-white rounded-3xl overflow-hidden border border-lunaSecondary/40 shadow-soft hover:shadow-hover transition duration-300 flex flex-col justify-between group reveal" data-name="sunday morning set">
+                    <div class="relative overflow-hidden aspect-[4/3] bg-lunaBg">
+                        <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=600" 
+                             alt="Sunday Morning Set" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <button onclick="toggleWishlist(this)" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md text-lunaPrimary hover:text-red-500 flex items-center justify-center transition shadow-sm">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-lunaPrimary font-cairo">Sunday Morning Set</h3>
+                                <p class="text-xs text-lunaText/60 mt-1 font-tajawal">أبيض ناصع ومنعش للعين</p>
+                            </div>
+                            <span class="text-base font-extrabold text-lunaPrimary font-cairo">899 <span class="text-xs font-normal">جنيه</span></span>
+                        </div>
+                        <button onclick="addToCart(3, 'Sunday Morning Set', 899, 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=300')" class="w-full mt-5 py-3 bg-lunaBg hover:bg-lunaPrimary hover:text-white text-lunaPrimary font-semibold text-xs rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 border border-lunaSecondary/60 font-tajawal">
+                            <i class="fa-solid fa-cart-plus"></i> إضافة إلى السلة
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 4 -->
+                <div class="bg-white rounded-3xl overflow-hidden border border-lunaSecondary/40 shadow-soft hover:shadow-hover transition duration-300 flex flex-col justify-between group reveal" data-name="soft latte set">
+                    <div class="relative overflow-hidden aspect-[4/3] bg-lunaBg">
+                        <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=600" 
+                             alt="Soft Latte Set" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <button onclick="toggleWishlist(this)" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md text-lunaPrimary hover:text-red-500 flex items-center justify-center transition shadow-sm">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-lunaPrimary font-cairo">Soft Latte Set</h3>
+                                <p class="text-xs text-lunaText/60 mt-1 font-tajawal">درجات الـ Latte الدافئة والناعمة</p>
+                            </div>
+                            <span class="text-base font-extrabold text-lunaPrimary font-cairo">999 <span class="text-xs font-normal">جنيه</span></span>
+                        </div>
+                        <button onclick="addToCart(4, 'Soft Latte Set', 999, 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=300')" class="w-full mt-5 py-3 bg-lunaBg hover:bg-lunaPrimary hover:text-white text-lunaPrimary font-semibold text-xs rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 border border-lunaSecondary/60 font-tajawal">
+                            <i class="fa-solid fa-cart-plus"></i> إضافة إلى السلة
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 5 -->
+                <div class="bg-white rounded-3xl overflow-hidden border border-lunaSecondary/40 shadow-soft hover:shadow-hover transition duration-300 flex flex-col justify-between group reveal" data-name="little daisy set">
+                    <div class="relative overflow-hidden aspect-[4/3] bg-lunaBg">
+                        <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=600" 
+                             alt="Little Daisy Set" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <button onclick="toggleWishlist(this)" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md text-lunaPrimary hover:text-red-500 flex items-center justify-center transition shadow-sm">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-lunaPrimary font-cairo">Little Daisy Set</h3>
+                                <p class="text-xs text-lunaText/60 mt-1 font-tajawal">نقوش ورد لطيفة وعصرية</p>
+                            </div>
+                            <span class="text-base font-extrabold text-lunaPrimary font-cairo">949 <span class="text-xs font-normal">جنيه</span></span>
+                        </div>
+                        <button onclick="addToCart(5, 'Little Daisy Set', 949, 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=300')" class="w-full mt-5 py-3 bg-lunaBg hover:bg-lunaPrimary hover:text-white text-lunaPrimary font-semibold text-xs rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 border border-lunaSecondary/60 font-tajawal">
+                            <i class="fa-solid fa-cart-plus"></i> إضافة إلى السلة
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 6 -->
+                <div class="bg-white rounded-3xl overflow-hidden border border-lunaSecondary/40 shadow-soft hover:shadow-hover transition duration-300 flex flex-col justify-between group reveal" data-name="olive dream set">
+                    <div class="relative overflow-hidden aspect-[4/3] bg-lunaBg">
+                        <img src="https://images.unsplash.com/photo-1617325247661-675ab4b64ae2?auto=format&fit=crop&q=80&w=600" 
+                             alt="Olive Dream Set" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <button onclick="toggleWishlist(this)" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md text-lunaPrimary hover:text-red-500 flex items-center justify-center transition shadow-sm">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-lunaPrimary font-cairo">Olive Dream Set</h3>
+                                <p class="text-xs text-lunaText/60 mt-1 font-tajawal">لون زيتي دافئ وراقي جداً</p>
+                            </div>
+                            <span class="text-base font-extrabold text-lunaPrimary font-cairo">999 <span class="text-xs font-normal">جنيه</span></span>
+                        </div>
+                        <button onclick="addToCart(6, 'Olive Dream Set', 999, 'https://images.unsplash.com/photo-1617325247661-675ab4b64ae2?auto=format&fit=crop&q=80&w=300')" class="w-full mt-5 py-3 bg-lunaBg hover:bg-lunaPrimary hover:text-white text-lunaPrimary font-semibold text-xs rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 border border-lunaSecondary/60 font-tajawal">
+                            <i class="fa-solid fa-cart-plus"></i> إضافة إلى السلة
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Large Feature Banner Section -->
+    <section class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="relative rounded-3xl overflow-hidden shadow-2xl min-h-[380px] sm:min-h-[460px] flex items-center justify-center text-center p-8 reveal">
+                <img src="https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=1600" 
+                     alt="Luna Home Living Space" 
+                     class="absolute inset-0 w-full h-full object-cover">
+                <div class="absolute inset-0 bg-lunaPrimary/50 backdrop-blur-[2px]"></div>
+
+                <div class="relative z-10 max-w-2xl space-y-4 text-white">
+                    <span class="inline-block px-4 py-1.5 rounded-full bg-white/20 border border-white/30 text-xs font-bold tracking-wide font-tajawal">
+                        لمسات دافئة لمساحتك
+                    </span>
+                    <h2 class="text-3xl sm:text-5xl font-extrabold font-cairo leading-tight">
+                        غرفتك تستحق لمسة من الحب.
+                    </h2>
+                    <p class="text-sm sm:text-base text-lunaSecondary font-tajawal max-w-lg mx-auto">
+                        اكتشف مفروشات صُممت لتجعل كل يوم أكثر راحة وجمالاً مع أقمشة فائقة النعومة.
+                    </p>
+                    <div class="pt-2">
+                        <a href="#products" class="inline-block px-8 py-3.5 bg-lunaSecondary text-lunaPrimary font-bold rounded-2xl hover:bg-white transition duration-300 shadow-lg text-xs sm:text-sm font-tajawal">
+                            اكتشف المزيد
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Luna Home Section -->
+    <section id="why-us" class="py-16 bg-white border-y border-lunaSecondary/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <span class="text-xs font-bold tracking-widest text-lunaAccent uppercase font-tajawal">سر التميز</span>
+                <h2 class="text-3xl font-extrabold text-lunaPrimary font-cairo mt-1">لماذا Luna Home؟</h2>
+                <p class="text-sm text-lunaText/70 mt-2 font-tajawal">نضمن لك تجربة تسوق سلسة وجودة تدوم طويلاً</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <div class="p-6 rounded-3xl bg-lunaBg border border-lunaSecondary/40 text-center space-y-3 hover:-translate-y-1 transition duration-300 shadow-soft reveal">
+                    <div class="w-14 h-14 rounded-2xl bg-lunaSecondary/50 text-lunaPrimary flex items-center justify-center text-2xl mx-auto">
+                        <i class="fa-solid fa-feather text-lunaAccent"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-lunaPrimary font-cairo">خامات ناعمة</h3>
+                    <p class="text-xs text-lunaText/70 leading-relaxed font-tajawal">أقمشة مريحة مناسبة للاستخدام اليومي والغسيل المتكرر دون فقدان جودتها.</p>
+                </div>
+
+                <div class="p-6 rounded-3xl bg-lunaBg border border-lunaSecondary/40 text-center space-y-3 hover:-translate-y-1 transition duration-300 shadow-soft reveal">
+                    <div class="w-14 h-14 rounded-2xl bg-lunaSecondary/50 text-lunaPrimary flex items-center justify-center text-2xl mx-auto">
+                        <i class="fa-solid fa-wand-magic-sparkles text-lunaAccent"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-lunaPrimary font-cairo">تصميمات عصرية</h3>
+                    <p class="text-xs text-lunaText/70 leading-relaxed font-tajawal">ستايلات تناسب غرف النوم الحديثة وتضيف لمسة دفء وبساطة راقية.</p>
+                </div>
+
+                <div class="p-6 rounded-3xl bg-lunaBg border border-lunaSecondary/40 text-center space-y-3 hover:-translate-y-1 transition duration-300 shadow-soft reveal">
+                    <div class="w-14 h-14 rounded-2xl bg-lunaSecondary/50 text-lunaPrimary flex items-center justify-center text-2xl mx-auto">
+                        <i class="fa-solid fa-cart-flatbed text-lunaAccent"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-lunaPrimary font-cairo">تجربة شراء سهلة</h3>
+                    <p class="text-xs text-lunaText/70 leading-relaxed font-tajawal">تصفح المنتجات والوصول إليها بسهولة والدفع الآمن وسرعة الشحن.</p>
+                </div>
+
+                <div class="p-6 rounded-3xl bg-lunaBg border border-lunaSecondary/40 text-center space-y-3 hover:-translate-y-1 transition duration-300 shadow-soft reveal">
+                    <div class="w-14 h-14 rounded-2xl bg-lunaSecondary/50 text-lunaPrimary flex items-center justify-center text-2xl mx-auto">
+                        <i class="fa-solid fa-heart text-lunaAccent"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-lunaPrimary font-cairo">اختيار بعناية</h3>
+                    <p class="text-xs text-lunaText/70 leading-relaxed font-tajawal">نهتم بالتفاصيل الخفية والخامات والتصميم لتقديم تجربة متكاملة.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <span class="text-xs font-bold tracking-widest text-lunaAccent uppercase font-tajawal">ثقة العميل هي الأهم</span>
+                <h2 class="text-3xl font-extrabold text-lunaPrimary font-cairo mt-1">آراء عملائنا</h2>
+                <p class="text-sm text-lunaText/70 mt-2 font-tajawal">انطباعات حقيقية من عملائنا بعد تجربة مفروشات Luna Home</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <div class="p-6 rounded-3xl bg-white border border-lunaSecondary/40 shadow-soft flex flex-col justify-between space-y-4 reveal">
+                    <div class="space-y-3">
+                        <div class="flex text-amber-400 text-xs gap-1">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-xs sm:text-sm text-lunaText/90 leading-relaxed font-tajawal italic">
+                            "التصميم أجمل بكتير في الحقيقة، حبيت الملاية جدًا والنسيج طري جداً بعد الغسيل."
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 pt-4 border-t border-lunaSecondary/30">
+                        <div class="w-10 h-10 rounded-full bg-lunaSecondary/60 flex items-center justify-center font-bold text-lunaPrimary text-xs font-cairo">
+                            ن
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-lunaPrimary font-cairo">نور الشريف</h4>
+                            <p class="text-[10px] text-lunaText/60 font-tajawal">عميل موثوق</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 rounded-3xl bg-white border border-lunaSecondary/40 shadow-soft flex flex-col justify-between space-y-4 reveal">
+                    <div class="space-y-3">
+                        <div class="flex text-amber-400 text-xs gap-1">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-xs sm:text-sm text-lunaText/90 leading-relaxed font-tajawal italic">
+                            "الخامة مريحة جدًا والألوان جميلة ودافئة بتعطي شعور بالراحة في الغرفة."
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 pt-4 border-t border-lunaSecondary/30">
+                        <div class="w-10 h-10 rounded-full bg-lunaSecondary/60 flex items-center justify-center font-bold text-lunaPrimary text-xs font-cairo">
+                            م
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-lunaPrimary font-cairo">مريم العوضي</h4>
+                            <p class="text-[10px] text-lunaText/60 font-tajawal">عميل موثوق</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 rounded-3xl bg-white border border-lunaSecondary/40 shadow-soft flex flex-col justify-between space-y-4 reveal">
+                    <div class="space-y-3">
+                        <div class="flex text-amber-400 text-xs gap-1">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-xs sm:text-sm text-lunaText/90 leading-relaxed font-tajawal italic">
+                            "أخيرًا لقيت تصميم يناسب شكل أوضة نومي، والتوصيل كان أسرع مما توقعت."
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 pt-4 border-t border-lunaSecondary/30">
+                        <div class="w-10 h-10 rounded-full bg-lunaSecondary/60 flex items-center justify-center font-bold text-lunaPrimary text-xs font-cairo">
+                            س
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-lunaPrimary font-cairo">سارة محمود</h4>
+                            <p class="text-[10px] text-lunaText/60 font-tajawal">عميل موثوق</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Instagram Gallery Section -->
+    <section class="py-16 bg-white border-t border-lunaSecondary/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-10 reveal">
+                <span class="text-xs font-bold tracking-widest text-lunaAccent uppercase font-tajawal"><i class="fa-brands fa-instagram"></i> @lunahome</span>
+                <h2 class="text-3xl font-extrabold text-lunaPrimary font-cairo mt-1">تابع عالمنا المريح</h2>
+                <p class="text-sm text-lunaText/70 mt-2 font-tajawal">شاركي صور غرفتك مع منتحاتنا على انستجرام</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 reveal">
+                <div class="relative group rounded-2xl overflow-hidden aspect-square shadow-soft">
+                    <img src="https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&q=80&w=400" alt="Insta 1" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-lunaPrimary/50 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xl">
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+                </div>
+                <div class="relative group rounded-2xl overflow-hidden aspect-square shadow-soft">
+                    <img src="https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=400" alt="Insta 2" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-lunaPrimary/50 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xl">
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+                </div>
+                <div class="relative group rounded-2xl overflow-hidden aspect-square shadow-soft">
+                    <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=400" alt="Insta 3" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-lunaPrimary/50 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xl">
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+                </div>
+                <div class="relative group rounded-2xl overflow-hidden aspect-square shadow-soft">
+                    <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=400" alt="Insta 4" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-lunaPrimary/50 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xl">
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+                </div>
+                <div class="relative group rounded-2xl overflow-hidden aspect-square shadow-soft">
+                    <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=400" alt="Insta 5" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-lunaPrimary/50 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xl">
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+                </div>
+                <div class="relative group rounded-2xl overflow-hidden aspect-square shadow-soft">
+                    <img src="https://images.unsplash.com/photo-1617325247661-675ab4b64ae2?auto=format&fit=crop&q=80&w=400" alt="Insta 6" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-lunaPrimary/50 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xl">
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-8">
+                <a href="https://instagram.com" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-lunaBg border border-lunaSecondary text-lunaPrimary font-semibold rounded-full hover:bg-lunaSecondary/50 text-xs transition font-tajawal">
+                    <i class="fa-brands fa-instagram text-base"></i> تابعنا على Instagram
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="py-16 bg-lunaSecondary/30">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
+            <div class="bg-white rounded-3xl p-8 sm:p-12 shadow-soft border border-lunaSecondary/60 space-y-4">
+                <div class="w-12 h-12 rounded-full bg-lunaBg text-lunaAccent flex items-center justify-center text-xl mx-auto">
+                    <i class="fa-regular fa-envelope"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-lunaPrimary font-cairo">خليك دايمًا في الصورة</h2>
+                <p class="text-xs sm:text-sm text-lunaText/70 max-w-md mx-auto font-tajawal">اشترك لمعرفة أحدث المجموعات والعروض الإلهام الخاص بغرفة نومك.</p>
+                
+                <form onsubmit="handleNewsletter(event)" class="pt-4 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+                    <input type="email" required placeholder="أدخل بريدك الإلكتروني..." class="flex-1 px-5 py-3.5 bg-lunaBg border border-lunaSecondary/70 rounded-2xl text-xs sm:text-sm focus:outline-none focus:border-lunaAccent font-tajawal">
+                    <button type="submit" class="px-8 py-3.5 bg-lunaPrimary text-white font-bold rounded-2xl hover:bg-lunaAccent transition text-xs sm:text-sm font-tajawal">
+                        اشترك
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <span class="text-xs font-bold tracking-widest text-lunaAccent uppercase font-tajawal">يسعدنا تواصلك</span>
+                <h2 class="text-3xl font-extrabold text-lunaPrimary font-cairo mt-1">تواصل معنا</h2>
+                <p class="text-sm text-lunaText/70 mt-2 font-tajawal">نحن هنا للإجابة على جميع استفساراتك حول مقاسات الأطقم وتفاصيل الشحن</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Contact Form -->
+                <div class="lg:col-span-7 bg-white p-8 rounded-3xl border border-lunaSecondary/50 shadow-soft reveal">
+                    <form onsubmit="handleContact(event)" class="space-y-4 font-tajawal">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-lunaPrimary mb-1">الاسم الكامل</label>
+                                <input type="text" required placeholder="اسمك الكريم" class="w-full px-4 py-3 bg-lunaBg border border-lunaSecondary/50 rounded-xl text-xs focus:outline-none focus:border-lunaAccent">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-lunaPrimary mb-1">البريد الإلكتروني</label>
+                                <input type="email" required placeholder="email@example.com" class="w-full px-4 py-3 bg-lunaBg border border-lunaSecondary/50 rounded-xl text-xs focus:outline-none focus:border-lunaAccent">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-lunaPrimary mb-1">رقم الهاتف</label>
+                            <input type="tel" placeholder="+20 123 456 789" class="w-full px-4 py-3 bg-lunaBg border border-lunaSecondary/50 rounded-xl text-xs focus:outline-none focus:border-lunaAccent">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-lunaPrimary mb-1">الرسالة</label>
+                            <textarea rows="4" required placeholder="أكتب استفسارك هنا..." class="w-full px-4 py-3 bg-lunaBg border border-lunaSecondary/50 rounded-xl text-xs focus:outline-none focus:border-lunaAccent resize-none"></textarea>
+                        </div>
+                        <button type="submit" class="w-full py-3.5 bg-lunaPrimary text-white font-bold text-xs rounded-xl hover:bg-lunaAccent transition shadow-md font-cairo">
+                            إرسال الرسالة
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Contact Details Card -->
+                <div class="lg:col-span-5 bg-lunaPrimary text-white p-8 rounded-3xl space-y-6 shadow-xl reveal">
+                    <div>
+                        <h3 class="text-xl font-bold font-cairo mb-2">معلومات التواصل</h3>
+                        <p class="text-xs text-lunaSecondary leading-relaxed font-tajawal">يمكنك التواصل مع فريق الدعم والرد السريع عبر القنوات التالية:</p>
+                    </div>
+
+                    <div class="space-y-4 text-xs font-tajawal">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-lunaSecondary">
+                                <i class="fa-brands fa-whatsapp text-base"></i>
+                            </div>
+                            <div>
+                                <p class="text-lunaSecondary/70 text-[10px]">واتساب</p>
+                                <p class="font-bold">+20 100 123 4567</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-lunaSecondary">
+                                <i class="fa-brands fa-instagram text-base"></i>
+                            </div>
+                            <div>
+                                <p class="text-lunaSecondary/70 text-[10px]">إنستغرام</p>
+                                <p class="font-bold">@lunahome</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-lunaSecondary">
+                                <i class="fa-solid fa-location-dot text-base"></i>
+                            </div>
+                            <div>
+                                <p class="text-lunaSecondary/70 text-[10px]">الموقع</p>
+                                <p class="font-bold">القاهرة، مصر</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="bg-lunaText text-white pt-16 pb-8 border-t border-lunaPrimary/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pb-12 border-b border-white/10">
+                
+                <div class="md:col-span-5 space-y-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-full bg-lunaAccent text-white flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-moon"></i>
+                        </div>
+                        <span class="text-2xl font-bold font-cairo text-white">Luna Home</span>
+                    </div>
+                    <p class="text-xs text-white/70 max-w-sm leading-relaxed font-tajawal">
+                        مفروشات عصرية لمساحات أجمل وأكثر راحة. نجعل سريرك مساحتك المريحة لتجديد طاقتك كل يوم.
+                    </p>
+                    <div class="flex items-center gap-3 pt-2">
+                        <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:bg-lunaAccent hover:text-white transition text-xs">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:bg-lunaAccent hover:text-white transition text-xs">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:bg-lunaAccent hover:text-white transition text-xs">
+                            <i class="fa-brands fa-tiktok"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="md:col-span-3 space-y-3">
+                    <h4 class="text-sm font-bold text-lunaSecondary font-cairo">روابط سريعة</h4>
+                    <ul class="space-y-2 text-xs text-white/70 font-tajawal">
+                        <li><a href="#hero" class="hover:text-lunaAccent transition">الرئيسية</a></li>
+                        <li><a href="#collections" class="hover:text-lunaAccent transition">المجموعات</a></li>
+                        <li><a href="#products" class="hover:text-lunaAccent transition">المنتجات</a></li>
+                        <li><a href="#why-us" class="hover:text-lunaAccent transition">لماذا نحن</a></li>
+                        <li><a href="#contact" class="hover:text-lunaAccent transition">تواصل معنا</a></li>
+                    </ul>
+                </div>
+
+                <div class="md:col-span-4 space-y-3">
+                    <h4 class="text-sm font-bold text-lunaSecondary font-cairo">خدمة العملاء</h4>
+                    <ul class="space-y-2 text-xs text-white/70 font-tajawal">
+                        <li><a href="#" class="hover:text-lunaAccent transition">سياسة الشحن والتوصيل</a></li>
+                        <li><a href="#" class="hover:text-lunaAccent transition">سياسة الاستبدال والاسترجاع</a></li>
+                        <li><a href="#" class="hover:text-lunaAccent transition">دليل العناية بالقطن والملايات</a></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <div class="pt-8 text-center text-xs text-white/50 flex flex-col sm:flex-row justify-between items-center gap-4 font-tajawal">
+                <p>© 2026 Luna Home. All rights reserved.</p>
+                <div class="flex items-center gap-4 text-[11px]">
+                    <a href="#" class="hover:text-white transition">الشروط والأحكام</a>
+                    <a href="#" class="hover:text-white transition">سياسة الخصوصية</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Dynamic State Engine -->
+    <script>
+        // Application State
+        let cart = [];
+        let wishlistCount = 0;
+
+        // Toggle Mobile Menu Navigation
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Toggle Shopping Cart Drawer Side
+        function toggleCart() {
+            const drawer = document.getElementById('cart-drawer');
+            const backdrop = document.getElementById('cart-backdrop');
+            const panel = document.getElementById('cart-panel');
+
+            if (drawer.classList.contains('pointer-events-none')) {
+                drawer.classList.remove('pointer-events-none');
+                backdrop.classList.remove('opacity-0');
+                backdrop.classList.add('opacity-100');
+                panel.classList.remove('-translate-x-full');
+                panel.classList.add('translate-x-0');
+            } else {
+                backdrop.classList.remove('opacity-100');
+                backdrop.classList.add('opacity-0');
+                panel.classList.remove('translate-x-0');
+                panel.classList.add('-translate-x-full');
+                setTimeout(() => {
+                    drawer.classList.add('pointer-events-none');
+                }, 300);
+            }
+        }
+
+        // Search Overlay Trigger
+        function toggleSearch() {
+            const modal = document.getElementById('search-modal');
+            const box = document.getElementById('search-box');
+            if (modal.classList.contains('pointer-events-none')) {
+                modal.classList.remove('pointer-events-none', 'opacity-0');
+                modal.classList.add('opacity-100');
+                box.classList.remove('-translate-y-6');
+                box.classList.add('translate-y-0');
+                document.getElementById('search-input').focus();
+            } else {
+                modal.classList.remove('opacity-100');
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                box.classList.remove('translate-y-0');
+                box.classList.add('-translate-y-6');
+            }
+        }
+
+        // Cart Add Functionality
+        function addToCart(id, name, price, image) {
+            const existingItem = cart.find(item => item.id === id);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ id, name, price, image, quantity: 1 });
+            }
+            updateCartUI();
+            showToast(`تمت إضافة "${name}" إلى السلة بنجاح`);
+        }
+
+        // Cart State & DOM Updates
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items-container');
+            const emptyCart = document.getElementById('empty-cart');
+            const cartFooter = document.getElementById('cart-footer');
+            const cartBadge = document.getElementById('cart-badge');
+            const cartCountText = document.getElementById('cart-count-text');
+
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartBadge.innerText = totalItems;
+            cartCountText.innerText = totalItems;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '';
+                cartItemsContainer.appendChild(emptyCart);
+                emptyCart.classList.remove('hidden');
+                cartFooter.classList.add('hidden');
+            } else {
+                emptyCart.classList.add('hidden');
+                cartFooter.classList.remove('hidden');
+
+                let html = '';
+                let total = 0;
+
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    html += `
+                        <div class="flex items-center gap-3 bg-white p-3 rounded-2xl border border-lunaSecondary/40 shadow-sm font-tajawal">
+                            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-xl object-cover">
+                            <div class="flex-1">
+                                <h4 class="text-xs font-bold text-lunaPrimary font-cairo">${item.name}</h4>
+                                <p class="text-xs text-lunaAccent font-semibold mt-0.5">${item.price} جنيه</p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 rounded-md bg-lunaBg border border-lunaSecondary flex items-center justify-center text-xs text-lunaPrimary font-bold hover:bg-lunaSecondary">-</button>
+                                    <span class="text-xs font-semibold px-1">${item.quantity}</span>
+                                    <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 rounded-md bg-lunaBg border border-lunaSecondary flex items-center justify-center text-xs text-lunaPrimary font-bold hover:bg-lunaSecondary">+</button>
+                                </div>
+                            </div>
+                            <button onclick="removeItem(${item.id})" class="text-lunaPrimary/40 hover:text-red-500 text-sm p-1 transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+
+                cartItemsContainer.innerHTML = html;
+                document.getElementById('subtotal-price').innerText = total + ' جنيه';
+                document.getElementById('total-price').innerText = total + ' جنيه';
+            }
+        }
+
+        // Change Quantity
+        function changeQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.id !== id);
+                }
+                updateCartUI();
+            }
+        }
+
+        // Remove Item
+        function removeItem(id) {
+            cart = cart.filter(i => i.id !== id);
+            updateCartUI();
+            showToast('تمت إزالة المنتج من السلة');
+        }
+
+        // Toggle Wishlist Heart
+        function toggleWishlist(btn) {
+            const icon = btn.querySelector('i');
+            const badge = document.getElementById('wishlist-badge');
+
+            if (icon.classList.contains('fa-regular')) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid', 'text-red-500');
+                wishlistCount++;
+                showToast('تمت الإضافة إلى المفضلة ❤️');
+            } else {
+                icon.classList.remove('fa-solid', 'text-red-500');
+                icon.classList.add('fa-regular');
+                wishlistCount = Math.max(0, wishlistCount - 1);
+                showToast('تمت إزالته من المفضلة');
+            }
+
+            badge.innerText = wishlistCount;
+            if (wishlistCount > 0) {
+                badge.classList.remove('opacity-0');
+            } else {
+                badge.classList.add('opacity-0');
+            }
+        }
+
+        function showWishlistToast() {
+            if (wishlistCount === 0) {
+                showToast('قائمة المفضلة فارغة حالياً');
+            } else {
+                showToast(`لديك ${wishlistCount} منتجات في المفضلة`);
+            }
+        }
+
+        // Toast Popup Helper
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-msg');
+            msgEl.innerText = msg;
+
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 2500);
+        }
+
+        // Live Product Search
+        function filterProducts() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('search-results');
+            const productCards = document.querySelectorAll('#products-grid > div');
+
+            if (query === '') {
+                resultsContainer.innerHTML = '<p class="text-xs text-lunaPrimary/60 text-center py-4">اكتب شيئاً لبدء البحث عن المفروشات والملايات...</p>';
+                return;
+            }
+
+            let matches = [];
+            productCards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                if (name && name.includes(query)) {
+                    const title = card.querySelector('h3').innerText;
+                    const price = card.querySelector('span.text-base').innerText;
+                    const img = card.querySelector('img').src;
+                    matches.push({ title, price, img });
+                }
+            });
+
+            if (matches.length > 0) {
+                resultsContainer.innerHTML = matches.map(m => `
+                    <div onclick="toggleSearch(); document.getElementById('products').scrollIntoView();" class="flex items-center gap-3 p-2 hover:bg-lunaBg rounded-xl cursor-pointer transition font-tajawal">
+                        <img src="${m.img}" class="w-12 h-12 rounded-lg object-cover">
+                        <div class="flex-1">
+                            <h5 class="text-xs font-bold text-lunaPrimary font-cairo">${m.title}</h5>
+                            <span class="text-[11px] text-lunaAccent font-semibold">${m.price}</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-left text-xs text-lunaPrimary/40"></i>
+                    </div>
+                `).join('');
+            } else {
+                resultsContainer.innerHTML = '<p class="text-xs text-red-500 text-center py-4">لم نجد منتجات تطابق بحثك</p>';
+            }
+        }
+
+        // Checkout Action
+        function checkout() {
+            showToast('جاري تحويلك إلى صفحة الدفع الآمن...');
+        }
+
+        // Newsletter Handler
+        function handleNewsletter(e) {
+            e.preventDefault();
+            showToast('شكراً لاشتراكك في نشرة Luna Home البريدية!');
+            e.target.reset();
+        }
+
+        // Contact Form Handler
+        function handleContact(e) {
+            e.preventDefault();
+            showToast('تم إرسال رسالتك بنجاح! وسنتواصل معك قريباً.');
+            e.target.reset();
+        }
+
+        // Initialize Scroll Observer for Reveal Animations
+        document.addEventListener("DOMContentLoaded", function() {
+            const reveals = document.querySelectorAll(".reveal");
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("active");
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            reveals.forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>
